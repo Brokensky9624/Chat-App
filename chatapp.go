@@ -1,9 +1,47 @@
 package main
 
 import (
+	"context"
+	"example/homework/chatapp/service"
+	_ "example/homework/chatapp/service"
 	. "example/homework/chatapp/utils"
 )
 
 func main() {
-	Output("Hello World, let's do it.")
+	Logger.Println("Chat app was started.")
+	ctx, cancel := context.WithCancel(context.Background())
+	service.InitDb(ctx)
+	dbMngr := service.GetDbManager()
+	for {
+		if dbMngr.IsInited() {
+			break
+		}
+	}
+	service.InitLineBot(ctx)
+	lineMngr := service.GetLineManager()
+	for {
+		if lineMngr.IsInited() {
+			break
+		}
+	}
+	service.InitApp()
+	appMngr := service.GetAppManager()
+	for {
+		if appMngr.IsInited() {
+			break
+		}
+	}
+	defer func() {
+		if err := recover(); err != nil {
+			cancel()
+			Logger.Println("Panic happended", err)
+		}
+		Logger.Println("Chat app was finish.")
+	}()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		}
+	}
 }
