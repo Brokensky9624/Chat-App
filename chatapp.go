@@ -4,14 +4,15 @@ import (
 	"context"
 	"example/homework/chatapp/service"
 	_ "example/homework/chatapp/service"
+	"example/homework/chatapp/service/db"
 	. "example/homework/chatapp/utils"
 )
 
 func main() {
 	Logger.Println("Chat app was started.")
 	ctx, cancel := context.WithCancel(context.Background())
-	service.InitDb(ctx)
-	dbMngr := service.GetDbManager()
+	db.InitDb(ctx)
+	dbMngr := db.GetDbManager()
 	for {
 		if dbMngr.IsInited() {
 			break
