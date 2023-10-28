@@ -15,7 +15,7 @@ type dbModel interface {
 	SetID(primitive.ObjectID)
 }
 
-type userBaseModel struct {
+type UserMsgBaseModel struct {
 	id      primitive.ObjectID
 	User    string    `bson:"user"`
 	Message string    `bson:"message"`
@@ -23,23 +23,23 @@ type userBaseModel struct {
 	Reply   time.Time `bson:"reply"`
 }
 
-func NewUserBaseModel(user, message string) *userBaseModel {
-	return &userBaseModel{
+func NewUserMsgBaseModel(user, message string) *UserMsgBaseModel {
+	return &UserMsgBaseModel{
 		User:    user,
 		Message: message,
 		Recv:    time.Now(),
 	}
 }
 
-func (model userBaseModel) GetID() primitive.ObjectID {
+func (model UserMsgBaseModel) GetID() primitive.ObjectID {
 	return model.id
 }
 
-func (model *userBaseModel) SetID(id primitive.ObjectID) {
+func (model *UserMsgBaseModel) SetID(id primitive.ObjectID) {
 	model.id = id
 }
 
-type userModel struct {
+type UserMsgModel struct {
 	ID      primitive.ObjectID `bson:"_id"`
 	User    string             `bson:"user"`
 	Message string             `bson:"message"`
@@ -47,31 +47,31 @@ type userModel struct {
 	Reply   time.Time          `bson:"reply"`
 }
 
-func (model userModel) GetUser() string {
+func (model UserMsgModel) GetUser() string {
 	return model.User
 }
 
-func (model userModel) GetMessage() string {
+func (model UserMsgModel) GetMessage() string {
 	return model.Message
 }
 
-func (model userModel) GetRecv() string {
+func (model UserMsgModel) GetRecv() string {
 	return model.Recv.Format(TimeFormat)
 }
 
-func (model userModel) GetReply() string {
+func (model UserMsgModel) GetReply() string {
 	return model.Reply.Format(TimeFormat)
 }
 
-func (model *userModel) SetReply() {
+func (model *UserMsgModel) SetReply() {
 	model.Reply = time.Now()
 }
 
-func (model userModel) GetID() primitive.ObjectID {
+func (model UserMsgModel) GetID() primitive.ObjectID {
 	return model.ID
 }
 
-func (model *userModel) SetID(id primitive.ObjectID) {
+func (model *UserMsgModel) SetID(id primitive.ObjectID) {
 	model.ID = id
 }
 

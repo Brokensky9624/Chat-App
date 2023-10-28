@@ -29,15 +29,15 @@ func TestInsertDoc(t *testing.T) {
 		{
 			name: "save user info to mongodb",
 			args: args{
-				name: userColName,
-				doc:  NewUserBaseModel("Jason", "Hello MongoDB"),
+				name: UserMsgColName,
+				doc:  NewUserMsgBaseModel("Jason", "Hello MongoDB"),
 			},
 			wantErr: false,
 		},
 		{
 			name: "save book info to mongodb",
 			args: args{
-				name: bookColName,
+				name: BookColName,
 				doc: &bookBaseModel{
 					Name:   "Golang doc",
 					Author: "someone",
@@ -76,7 +76,7 @@ func TestFindDoc(t *testing.T) {
 		{
 			name: "query user info from mongodb",
 			args: args{
-				name:   userColName,
+				name:   UserMsgColName,
 				filter: bson.D{primitive.E{Key: "user", Value: "Jason"}},
 			},
 			wantErr: false,

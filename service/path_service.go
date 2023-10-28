@@ -17,3 +17,7 @@ func getProjectPath() string {
 func getConfigPath() string {
 	return filepath.Join(projectPath, "config")
 }
+
+func getCertPath() string {
+	return filepath.Join(projectPath, "cert")
+}

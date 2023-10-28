@@ -13,9 +13,9 @@ type (
 )
 
 const (
-	defaultColName colName = "test"
-	userColName    colName = "user"
-	bookColName    colName = "book"
+	DefaultColName colName = "test"
+	UserMsgColName colName = "user_msg"
+	BookColName    colName = "book"
 )
 
 func (name colName) str() string {
@@ -35,8 +35,8 @@ func InitDefaultCollection() error {
 	if err != nil {
 		return err
 	}
-	if !slices.Contains(names, defaultColName.str()) {
-		if err = CreateCol(defaultColName); err != nil {
+	if !slices.Contains(names, DefaultColName.str()) {
+		if err = CreateCol(DefaultColName); err != nil {
 			return err
 		}
 	}
@@ -69,13 +69,13 @@ func InsertDoc(name colName, doc dbModel) error {
 	return nil
 }
 
-func FindUserDoc(name colName, filter bson.D) ([]userModel, error) {
+func FindUserDoc(name colName, filter bson.D) ([]UserMsgModel, error) {
 	cl := Col(name)
 	cursor, err := cl.Find(DbManager.ctx, filter)
 	if err != nil {
 		return nil, err
 	}
-	var results []userModel
+	var results []UserMsgModel
 	if err = cursor.All(DbManager.ctx, &results); err != nil {
 		return nil, err
 	}
