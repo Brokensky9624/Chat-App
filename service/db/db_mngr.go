@@ -64,7 +64,7 @@ func (man *dbManager) Run() {
 		defer cancel()
 		err = InitDefaultCollection()
 		if err != nil {
-			Logger.Panicf("Failed to init default collection %s in mongoDB %s\n", defaultColName, err)
+			Logger.Panicf("Failed to init default collection %s in mongoDB %s\n", DefaultColName, err)
 		}
 		man.isInited = true
 		Logger.Println("Succeed to connect to mongoDB")

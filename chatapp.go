@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
-	"example/homework/chatapp/service"
 	_ "example/homework/chatapp/service"
 	"example/homework/chatapp/service/db"
+	"example/homework/chatapp/service/line"
+	"example/homework/chatapp/service/router"
+	"example/homework/chatapp/service/web"
 	. "example/homework/chatapp/utils"
 )
 
@@ -18,20 +20,22 @@ func main() {
 			break
 		}
 	}
-	service.InitLineBot(ctx)
-	lineMngr := service.GetLineManager()
+	line.InitLineBot(ctx)
+	lineMngr := line.GetLineManager()
 	for {
 		if lineMngr.IsInited() {
 			break
 		}
 	}
-	service.InitApp()
-	appMngr := service.GetAppManager()
+	web.InitWeb(ctx)
+	webMngr := web.GetWebManager()
 	for {
-		if appMngr.IsInited() {
+		if webMngr.IsInited() {
 			break
 		}
 	}
+	router.InitAllRouter()
+
 	defer func() {
 		if err := recover(); err != nil {
 			cancel()
