@@ -84,9 +84,9 @@ func TestFindDoc(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := FindUserDoc(tt.args.name, tt.args.filter)
+			_, err := QueryUserMsg(tt.args.name, tt.args.filter)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("FindUserDoc() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("QueryUserMsg() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

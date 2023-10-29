@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"strings"
 
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"go.mongodb.org/mongo-driver/bson"
@@ -30,11 +29,9 @@ func ParseRequest(w http.ResponseWriter, req *http.Request) error {
 		if event.Type == linebot.EventTypeMessage {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
-				retList, err := HandleText(event, message)
-				retStr := strings.Join(retList, "\n")
-				_, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(retStr)).Do()
+				err := HandleText(event, message)
 				if err != nil {
-					Logger.Println("Failed to reply message by line bot", err)
+					Logger.Println("Failed to HandleText in line_api", err)
 				}
 			}
 		}
@@ -42,51 +39,71 @@ func ParseRequest(w http.ResponseWriter, req *http.Request) error {
 	return nil
 }
 
-func HandleText(event *linebot.Event, textMsg *linebot.TextMessage) ([]string, error) {
+func HandleText(event *linebot.Event, textMsg *linebot.TextMessage) error {
 	user := event.Source.UserID
 	msg := textMsg.Text
-	var retList []string
 	var err error
+	var ret []byte
 	switch {
-	case regexp.MustCompile(`^search`).FindString(msg) != "":
-		if retList, err = queryUser(user); err != nil {
-			return nil, err
-		}
+	case regexp.MustCompile(`^search$`).FindString(msg) != "":
+		ret, err = QueryUserMsg(user)
+	case regexp.MustCompile("^delete$").FindString(msg) != "":
+		ret, err = deleteUserMsg(user)
 	default:
-		if retList, err = insertUserMsg(user, msg); err != nil {
-			return nil, err
+		ret, err = insertUserMsg(user, msg)
+	}
+	if err != nil {
+		return err
+	}
+	if string(ret) != "" {
+		if err = ReplyMessage(event.ReplyToken, linebot.NewTextMessage(string(ret))); err != nil {
+			return err
 		}
 	}
-	return retList, nil
+	return nil
 }
 
-func queryUser(user string) ([]string, error) {
-	var retList []string
-	userMsgModels, err := db.FindUserDoc(db.UserMsgColName, bson.D{primitive.E{Key: "user", Value: user}})
+func QueryUserMsg(user string) ([]byte, error) {
+	userMsgModels, err := db.QueryUserMsg(db.UserMsgColName, bson.D{primitive.E{Key: "user", Value: user}})
 	if err != nil {
 		return nil, err
 	}
-	for _, userMsgModel := range userMsgModels {
-		b, err := json.Marshal(userMsgModel)
-		if err != nil {
-			return nil, err
-		}
-		ret := fmt.Sprintf("Success query doc %s from mongoDB col %s", string(b), db.UserMsgColName)
-		retList = append(retList, ret)
-		Logger.Println(ret)
-
+	b, err := json.MarshalIndent(userMsgModels, "", "\t")
+	if err != nil {
+		return nil, err
 	}
-	return retList, nil
+	Logger.Println(string(b))
+	return b, nil
 }
 
-func insertUserMsg(user, text string) ([]string, error) {
+func insertUserMsg(user, text string) ([]byte, error) {
 	userDoc := db.NewUserMsgBaseModel(user, text)
 	if err := db.InsertDoc(db.UserMsgColName, userDoc); err != nil {
 		return nil, err
 	}
-	ret := fmt.Sprintf("Success insert doc %s to mongoDB col %s", userDoc.GetID().Hex(), db.UserMsgColName)
+	ret := fmt.Sprintf(`{col:%s, insertedId: %s}`, db.UserMsgColName, userDoc.GetID().Hex())
 	Logger.Println(ret)
-	return []string{ret}, nil
+	return []byte(ret), nil
+}
+
+func deleteUserMsg(user string) ([]byte, error) {
+	filter := bson.D{primitive.E{Key: "user", Value: user}}
+	result, err := db.DeleteDoc(db.UserMsgColName, filter)
+	if err != nil {
+		return nil, err
+	}
+	ret := fmt.Sprintf(`{col:%s, deleteCount: %d}`, db.UserMsgColName, result.DeletedCount)
+	return []byte(ret), nil
+}
+
+func ReplyMessage(replyToken string, message linebot.SendingMessage) error {
+	mngr := LineManager
+	bot := mngr.Bot()
+	_, err := bot.ReplyMessage(replyToken, message).Do()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func SendMsg(inputUser, inputText string) error {

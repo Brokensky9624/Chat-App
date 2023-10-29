@@ -1,6 +1,7 @@
 package db
 
 import (
+	. "example/homework/chatapp/utils"
 	"slices"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -69,7 +70,7 @@ func InsertDoc(name colName, doc dbModel) error {
 	return nil
 }
 
-func FindUserDoc(name colName, filter bson.D) ([]UserMsgModel, error) {
+func QueryDoc(name colName, filter bson.D) ([]UserMsgModel, error) {
 	cl := Col(name)
 	cursor, err := cl.Find(DbManager.ctx, filter)
 	if err != nil {
@@ -80,4 +81,27 @@ func FindUserDoc(name colName, filter bson.D) ([]UserMsgModel, error) {
 		return nil, err
 	}
 	return results, nil
+}
+
+func QueryUserMsg(name colName, filter bson.D) ([]UserMsgModel, error) {
+	cl := Col(name)
+	cursor, err := cl.Find(DbManager.ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	var results []UserMsgModel
+	if err = cursor.All(DbManager.ctx, &results); err != nil {
+		return nil, err
+	}
+	return results, nil
+}
+
+func DeleteDoc(name colName, filter bson.D) (*mongo.DeleteResult, error) {
+	cl := Col(name)
+	result, err := cl.DeleteMany(DbManager.ctx, filter, nil)
+	if err != nil {
+		return nil, err
+	}
+	Logger.Println("Number of documents deleted", result.DeletedCount, "in collection", name)
+	return result, nil
 }
