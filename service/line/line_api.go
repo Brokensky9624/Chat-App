@@ -88,3 +88,15 @@ func insertUserMsg(user, text string) ([]string, error) {
 	Logger.Println(ret)
 	return []string{ret}, nil
 }
+
+func SendMsg(inputUser, inputText string) error {
+	mngr := LineManager
+	bot := mngr.Bot()
+	if inputText == "" {
+		inputText = "N\\A"
+	}
+	if _, err := bot.PushMessage(inputUser, linebot.NewTextMessage(inputText)).Do(); err != nil {
+		return err
+	}
+	return nil
+}
